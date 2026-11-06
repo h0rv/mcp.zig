@@ -24,3 +24,13 @@ LICENSE file is included next to the files.
 
 No text of the ASD-STE100 Simplified Technical English standard is included in this
 product. The project cites its rules by number only.
+
+mcp.zig fork changes by h0rv
+
+This fork of ChristianPresley/zig-sdk v0.5.1 is based on commit
+52fc1b83c5f70f9e6a1fc2f1e2e71250656672cc. It includes the Zig 0.17.0 port
+first tested in Newt. Modified source files carry a change notice. The package
+build and layout were simplified, and local stdio client tests were added.
+The original notices above are retained. The referenced docs, HPACK code,
+and gRPC implementation are not distributed in this fork. All test fixtures
+and their original licenses and provenance files are retained.

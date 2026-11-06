@@ -1,6 +1,8 @@
 //! A minimal MCP server over stdio with one tool, one resource and one prompt.
 //!
-//! Run it with `zig build run-stdio_server` and send newline-delimited JSON-RPC on stdin.
+//! Modified by h0rv for Zig 0.17.0 and the standalone mcp.zig package.
+//! Build it with `zig build test-sdk`, then run `zig-out/bin/stdio_server`.
+//! Send newline-delimited JSON-RPC on stdin.
 const std = @import("std");
 const mcp = @import("mcp");
 

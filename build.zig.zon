@@ -1,16 +1,20 @@
+// Modified by h0rv for Zig 0.17.0 and the standalone mcp.zig package.
 .{
     .name = .mcp,
     .version = "0.5.1",
-    .fingerprint = 0xa19bc83940b1a7d5, // Changing this has security and trust implications.
-    .minimum_zig_version = "0.16.0",
+    .fingerprint = 0xa19bc83940b1a7d5,
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{},
     .paths = .{
         "build.zig",
         "build.zig.zon",
-        "src",
-        "proto",
+        "README.md",
         "LICENSE",
         "NOTICE",
-        "README.md",
+        "THIRD_PARTY_LICENSES.md",
+        "src",
+        "test",
+        "tests",
+        "examples/stdio_server.zig",
     },
 }

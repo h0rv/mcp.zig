@@ -1,5 +1,6 @@
 //! JSON helpers shared by the protocol types: discriminated unions, raw passthrough and
 //! stringify defaults.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 pub const Value = std.json.Value;
@@ -113,10 +114,10 @@ pub fn Discriminated(comptime U: type, comptime key: []const u8) type {
             const tag_value = source.object.get(key) orelse return error.MissingField;
             if (tag_value != .string) return error.UnexpectedToken;
             const tag = tag_value.string;
-            inline for (@typeInfo(U).@"union".fields) |field| {
-                if (std.mem.eql(u8, field.name, tag)) {
-                    const payload = try std.json.innerParseFromValue(field.type, allocator, source, options);
-                    return @unionInit(U, field.name, payload);
+            inline for (@typeInfo(U).@"union".field_names, @typeInfo(U).@"union".field_types) |name, Field| {
+                if (std.mem.eql(u8, name, tag)) {
+                    const payload = try std.json.innerParseFromValue(Field, allocator, source, options);
+                    return @unionInit(U, name, payload);
                 }
             }
             return error.InvalidEnumTag;

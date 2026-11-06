@@ -1,5 +1,6 @@
 //! Handshake helpers shared by the server and the client: the error set, the message
 //! reassembly over records, and the fatal alert helpers.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const tls = std.crypto.tls;
 const Decoder = tls.Decoder;
@@ -53,7 +54,7 @@ pub const signature_schemes = [_]tls.SignatureScheme{
 };
 
 pub fn acceptedScheme(wire: u16) ?tls.SignatureScheme {
-    for (signature_schemes) |s| if (@intFromEnum(s) == wire) return s;
+    for (signature_schemes) |s| if (@backingInt(s) == wire) return s;
     return null;
 }
 
@@ -106,7 +107,7 @@ pub fn ocspStaple(extensions: []const u8) codec.ParseError!?[]const u8 {
         if (extensions.len - i < len) return error.DecodeError;
         const data = extensions[i..][0..len];
         i += len;
-        if (ext_type != @intFromEnum(tls.ExtensionType.status_request)) continue;
+        if (ext_type != @backingInt(tls.ExtensionType.status_request)) continue;
         if (found != null) return error.IllegalParameter;
         if (data.len < 4) return error.DecodeError;
         if (data[0] != 1) return error.IllegalParameter; // status_type ocsp
@@ -222,7 +223,7 @@ pub const MessageReader = struct {
                     self.pending_consumed = 4 + body_len;
                     self.messages_read += 1;
                     return .{
-                        .kind = @enumFromInt(self.buf[0]),
+                        .kind = @fromBackingInt(@intCast(self.buf[0])),
                         .body = self.buf[4 .. 4 + body_len],
                         .raw = self.buf[0 .. 4 + body_len],
                     };
@@ -251,7 +252,7 @@ pub const MessageReader = struct {
                 },
                 .alert => {
                     if (rec.data.len != 2) return abort(c, alert_out, .decode_error, error.TlsDecodeError);
-                    const alert: tls.Alert = .{ .level = @enumFromInt(rec.data[0]), .description = @enumFromInt(rec.data[1]) };
+                    const alert: tls.Alert = .{ .level = @fromBackingInt(@intCast(rec.data[0])), .description = @fromBackingInt(@intCast(rec.data[1])) };
                     c.alert = alert;
                     if (alert_out) |a| a.* = alert;
                     return error.TlsAlert;

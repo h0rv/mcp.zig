@@ -1,5 +1,6 @@
 //! The HTTP client transport through a `CONNECT` proxy. `TestProxy` is a small proxy on a
 //! loopback port. The tests of the OAuth fetcher use it too.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Io = std.Io;
 const http = std.http;
@@ -138,7 +139,7 @@ pub const TestProxy = struct {
     }
 
     fn answer(w: *Io.Writer, status: http.Status) !void {
-        try w.print("HTTP/1.1 {d} {s}\r\ncontent-length: 0\r\nconnection: close\r\n\r\n", .{ @intFromEnum(status), status.phrase() orelse "" });
+        try w.print("HTTP/1.1 {d} {s}\r\ncontent-length: 0\r\nconnection: close\r\n\r\n", .{ @backingInt(status), status.phrase() orelse "" });
         try w.flush();
     }
 

@@ -1,4 +1,5 @@
 //! The comptime method table for MCP 2026-07-28.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const types = @import("types.zig");
 
@@ -104,9 +105,9 @@ pub const Method = enum {
     }
 
     const map = std.StaticStringMap(Method).initComptime(blk: {
-        const fields = @typeInfo(Method).@"enum".fields;
-        var kvs: [fields.len]struct { []const u8, Method } = undefined;
-        for (fields, 0..) |f, i| kvs[i] = .{ f.name, @enumFromInt(f.value) };
+        const info = @typeInfo(Method).@"enum";
+        var kvs: [info.field_names.len]struct { []const u8, Method } = undefined;
+        for (info.field_names, info.field_values, 0..) |field_name, value, i| kvs[i] = .{ field_name, @fromBackingInt(@intCast(value)) };
         break :blk kvs;
     });
 };
@@ -167,5 +168,5 @@ test "method table" {
     try std.testing.expect(!Method.@"tools/call".isCacheable());
     try std.testing.expect(Method.@"tools/call".allowsInputRequired());
     try std.testing.expectEqual(HeaderNameSource.uri, Method.@"resources/read".headerNameSource());
-    try std.testing.expectEqual(10, @typeInfo(Method).@"enum".fields.len);
+    try std.testing.expectEqual(10, @typeInfo(Method).@"enum".field_names.len);
 }

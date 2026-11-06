@@ -1,5 +1,6 @@
 //! Loopback tests for the Unix socket transport: a server and clients on a socket in a
 //! temporary directory.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const builtin = @import("builtin");
 const Io = std.Io;
@@ -377,7 +378,7 @@ test "unix socket server drops an oversize line and keeps the connection" {
     defer stream.close(io);
     var write_buf: [4096]u8 = undefined;
     var writer = stream.writer(io, &write_buf);
-    try writer.interface.writeAll("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{\"pad\":\"" ++ "x" ** 2000 ++ "\"}}\n");
+    try writer.interface.writeAll("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{\"pad\":\"" ++ @as([2000]u8, @splat('x')) ++ "\"}}\n");
     try writer.interface.writeAll("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{" ++ meta_none ++ "}}\n");
     try writer.interface.flush();
     var read_buf: [64 * 1024]u8 = undefined;

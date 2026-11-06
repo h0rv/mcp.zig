@@ -2,6 +2,7 @@
 //! `EnterpriseClient` and `WorkloadIdentity` get tokens from `AuthorizationServer`. They call an
 //! MCP server whose `ResourceServer` verifies the JWTs with the JWK set of the authorization
 //! server. The tests of the error cases call `handle` directly.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -30,7 +31,7 @@ const workload_issuer = "https://workload.example.org";
 const workload_subject = "spiffe://example.org/ns/prod/sa/agent";
 
 fn es256(seed: u8) jwt.SigningKey {
-    return .{ .es256 = Ecdsa.KeyPair.generateDeterministic([_]u8{seed} ** 32) catch unreachable };
+    return .{ .es256 = Ecdsa.KeyPair.generateDeterministic(@as([32]u8, @splat(seed))) catch unreachable };
 }
 
 fn realNow(io: Io) i64 {

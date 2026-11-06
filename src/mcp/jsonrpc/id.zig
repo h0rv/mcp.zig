@@ -1,5 +1,6 @@
 //! JSON-RPC request identifiers. The SDK accepts strings and integers. Integers that do not fit
 //! in an `i64` keep their digits verbatim. The parser rejects fractional or exponent numbers.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Value = std.json.Value;
@@ -53,7 +54,7 @@ pub const RequestId = union(enum) {
 
     pub fn hash(self: RequestId) u64 {
         var h = std.hash.Wyhash.init(0);
-        h.update(&.{@intFromEnum(std.meta.activeTag(self))});
+        h.update(&.{@backingInt(std.meta.activeTag(self))});
         switch (self) {
             .string => |s| h.update(s),
             .integer => |i| h.update(std.mem.asBytes(&i)),

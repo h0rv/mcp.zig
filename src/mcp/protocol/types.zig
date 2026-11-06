@@ -1,6 +1,7 @@
 //! Typed mirrors of `schema/2026-07-28/schema.ts`. Field names are the wire names.
 //! The parser ignores unknown fields on input. The writer omits optional fields that are
 //! null on output (see `json.wire_options`).
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const json = @import("../json.zig");
@@ -528,7 +529,7 @@ pub const LoggingLevel = enum {
 
     /// Severity order: higher is more severe.
     pub fn severity(self: LoggingLevel) u8 {
-        return @intFromEnum(self);
+        return @backingInt(self);
     }
 };
 

@@ -5,6 +5,7 @@
 //! The SDK checks the name forms `dNSName`, `iPAddress`, `directoryName`, `rfc822Name` and
 //! `uniformResourceIdentifier`. The check fails for a name of another form when a critical
 //! constraint of the CA has a subtree of that form.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const der = @import("der.zig");
 const x509 = @import("x509.zig");
@@ -40,7 +41,7 @@ pub const Form = enum(u4) {
     }
 
     fn bit(self: Form) u16 {
-        return @as(u16, 1) << @intFromEnum(self);
+        return @as(u16, 1) << @backingInt(self);
     }
 };
 
@@ -55,7 +56,7 @@ pub const GeneralName = struct {
         if (element.tag & 0xc0 != 0x80) return error.Malformed; // context-specific class
         const number = element.tag & 0x1f;
         if (number > 8) return error.Malformed;
-        const form: Form = @enumFromInt(number);
+        const form: Form = @fromBackingInt(@intCast(number));
         const constructed = element.tag & 0x20 != 0;
         const want_constructed = switch (form) {
             .other_name, .x400_address, .directory_name, .edi_party_name => true,

@@ -1,3 +1,0 @@
-# Known failures of the client suite. Every entry names a reason. The target is an empty list.
-server: []
-client: []

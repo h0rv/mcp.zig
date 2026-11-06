@@ -1,5 +1,6 @@
 //! Tests for the base protocol page, the version page and the discovery page of the specification.
 //! They check the message rules, the per-request metadata and the version negotiation.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -232,8 +233,8 @@ test "the server sends no response to a notification" {
 }
 
 test "no error code of the SDK is in the legacy sub-range" {
-    inline for (@typeInfo(errors.Code).@"enum".fields) |field| {
-        const code: i64 = field.value;
+    inline for (@typeInfo(errors.Code).@"enum".field_values) |value| {
+        const code: i64 = value;
         try std.testing.expect(!(code <= -32000 and code >= -32019));
         try std.testing.expect(errors.Code.isEmittable(code));
     }

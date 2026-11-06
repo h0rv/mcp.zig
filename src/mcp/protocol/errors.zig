@@ -1,6 +1,7 @@
 //! JSON-RPC and MCP error codes and error-object constructors.
 //!
 //! SDK-local failures (timeouts, closed transports) are Zig errors and never wire codes.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const types = @import("types.zig");
@@ -22,7 +23,7 @@ pub const Code = enum(i64) {
     _,
 
     pub fn int(self: Code) i64 {
-        return @intFromEnum(self);
+        return @backingInt(self);
     }
 
     /// Codes that this implementation must never emit: reserved codes from earlier revisions

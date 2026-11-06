@@ -7,6 +7,7 @@
 //! `FileTokenStorage` keeps them encrypted in files. `KeychainTokenStorage` in `keychain.zig`
 //! keeps them in the keychain of the host. The interface gives each implementation the
 //! serialized record, a versioned JSON text. Both sides erase the buffers with secrets after use.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const builtin = @import("builtin");
 const Io = std.Io;
@@ -574,7 +575,7 @@ test "file token storage encrypts each record and detects a change" {
     defer tmp.cleanup();
     const dir = try testDir(&tmp);
     defer gpa.free(dir);
-    const key = [_]u8{7} ** 32;
+    const key = @as([32]u8, @splat(7));
 
     var files: FileTokenStorage = try .init(io, gpa, .{ .dir = dir, .key = key });
     defer files.deinit();
@@ -611,7 +612,7 @@ test "file token storage encrypts each record and detects a change" {
     try std.testing.expectError(error.InvalidRecord, s.load(gpa, test_key));
     bytes[bytes.len / 2] ^= 1;
     try Io.Dir.cwd().writeFile(io, .{ .sub_path = path, .data = bytes });
-    var wrong: FileTokenStorage = try .init(io, gpa, .{ .dir = dir, .key = [_]u8{8} ** 32 });
+    var wrong: FileTokenStorage = try .init(io, gpa, .{ .dir = dir, .key = @as([32]u8, @splat(8)) });
     defer wrong.deinit();
     const wrong_path = try wrong.pathOf(gpa, test_key);
     defer gpa.free(wrong_path);
@@ -636,7 +637,7 @@ test "file token storage gives the owner only access to the directory and the fi
     defer tmp.cleanup();
     const dir = try testDir(&tmp);
     defer gpa.free(dir);
-    var files: FileTokenStorage = try .init(io, gpa, .{ .dir = dir, .key = [_]u8{9} ** 32 });
+    var files: FileTokenStorage = try .init(io, gpa, .{ .dir = dir, .key = @as([32]u8, @splat(9)) });
     defer files.deinit();
     try files.storage().save(gpa, test_key, testRecord());
     const path = try files.pathOf(gpa, test_key);

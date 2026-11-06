@@ -9,6 +9,7 @@
 //! generation of 8 bytes, the index and the number of chunks. A write puts the last chunk first
 //! and chunk 0 last. A read accepts only chunks of one generation. Thus a read during a write
 //! gives no mix of two records.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const windows = std.os.windows;
 const Io = std.Io;
@@ -203,7 +204,7 @@ fn writeTarget(target: [:0]const u16, blob: []u8, persist: Persist) Error!void {
     credential.TargetName = @constCast(target.ptr);
     credential.CredentialBlobSize = @intCast(blob.len);
     credential.CredentialBlob = blob.ptr;
-    credential.Persist = @intFromEnum(persist);
+    credential.Persist = @backingInt(persist);
     if (CredWriteW(&credential, 0) == 0) return failure("CredWriteW", windows.GetLastError());
 }
 
@@ -220,7 +221,7 @@ fn failure(comptime function: []const u8, code: windows.Win32Error) Error {
         .NO_SUCH_LOGON_SESSION => return error.KeychainUnavailable,
         .NOT_ENOUGH_MEMORY, .OUTOFMEMORY => return error.OutOfMemory,
         else => {
-            log.warn(function ++ " failed with Windows error {d}", .{@intFromEnum(code)});
+            log.warn(function ++ " failed with Windows error {d}", .{@backingInt(code)});
             return error.StorageFailed;
         },
     }

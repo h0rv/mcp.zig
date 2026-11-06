@@ -18,6 +18,7 @@
 //!
 //! Only a string field can have a `pattern`. The server compiles it when it registers
 //! the tool.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 
 /// The JSON Schema text for `T`, computed at compile time.
@@ -121,8 +122,8 @@ fn render(comptime T: type, comptime meta: ?FieldMeta, comptime depth: usize) []
             },
             .@"enum" => |info| {
                 var values: []const u8 = "";
-                for (info.fields, 0..) |f, i| {
-                    values = values ++ (if (i > 0) "," else "") ++ jsonString(f.name);
+                for (info.field_names, 0..) |name, i| {
+                    values = values ++ (if (i > 0) "," else "") ++ jsonString(name);
                 }
                 return "{\"type\":\"string\",\"enum\":[" ++ values ++ "]" ++ extra ++ "}";
             },
@@ -132,12 +133,12 @@ fn render(comptime T: type, comptime meta: ?FieldMeta, comptime depth: usize) []
                 var props: []const u8 = "";
                 var required: []const u8 = "";
                 var required_count: usize = 0;
-                for (info.fields, 0..) |f, i| {
-                    const fm = fieldMeta(T, f.name);
-                    props = props ++ (if (i > 0) "," else "") ++ jsonString(f.name) ++ ":" ++ render(f.type, fm, depth + 1);
-                    const is_optional = @typeInfo(f.type) == .optional;
-                    if (!is_optional and f.default_value_ptr == null) {
-                        required = required ++ (if (required_count > 0) "," else "") ++ jsonString(f.name);
+                for (info.field_names, info.field_types, info.field_attrs, 0..) |name, Field, attrs, i| {
+                    const fm = fieldMeta(T, name);
+                    props = props ++ (if (i > 0) "," else "") ++ jsonString(name) ++ ":" ++ render(Field, fm, depth + 1);
+                    const is_optional = @typeInfo(Field) == .optional;
+                    if (!is_optional and attrs.default_value_ptr == null) {
+                        required = required ++ (if (required_count > 0) "," else "") ++ jsonString(name);
                         required_count += 1;
                     }
                 }
@@ -152,8 +153,8 @@ fn render(comptime T: type, comptime meta: ?FieldMeta, comptime depth: usize) []
             .@"union" => |info| {
                 if (info.tag_type == null) @compileError("schema derivation: untagged unions are not supported");
                 var variants: []const u8 = "";
-                for (info.fields, 0..) |f, i| {
-                    variants = variants ++ (if (i > 0) "," else "") ++ render(f.type, null, depth + 1);
+                for (info.field_types, 0..) |Field, i| {
+                    variants = variants ++ (if (i > 0) "," else "") ++ render(Field, null, depth + 1);
                 }
                 return "{\"oneOf\":[" ++ variants ++ "]" ++ extra ++ "}";
             },

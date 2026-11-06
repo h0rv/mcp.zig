@@ -1,6 +1,8 @@
 //! Wake an accept loop that waits in `accept`. On Windows a cancel does not always wake a
 //! blocked accept. Thus a server connects to its own listener one time before it cancels its
 //! accept loop. The loop sees its stop flag after the accept and closes that connection.
+// Local changes: preserve native sockaddr byte layout under Zig 0.17 bitcast rules.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const builtin = @import("builtin");
 const Io = std.Io;
@@ -58,7 +60,7 @@ fn connectPosix(io: Io, target: Io.net.IpAddress) void {
     } = undefined;
     const len: posix.socklen_t = switch (target) {
         .ip4 => |a| len: {
-            storage = .{ .in = .{ .port = std.mem.nativeToBig(u16, a.port), .addr = @bitCast(a.bytes) } };
+            storage = .{ .in = .{ .port = std.mem.nativeToBig(u16, a.port), .addr = std.mem.bytesToValue(u32, &a.bytes) } };
             break :len @sizeOf(posix.sockaddr.in);
         },
         .ip6 => |a| len: {

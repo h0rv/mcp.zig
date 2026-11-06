@@ -2,6 +2,8 @@
 //! a Unix socket in a private temporary directory. It tests the D-Bus client, the SASL exchange
 //! and the Secret Service backend on each host with Unix sockets. The last test uses the keychain
 //! of the host when the host has one, and removes its items at the end.
+// Local changes: Zig 0.17 test isolation. Host-keychain tests are disabled.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const builtin = @import("builtin");
 const Io = std.Io;
@@ -584,6 +586,8 @@ fn abstractSocket(name: []const u8, mode: enum { listen, connect }) !std.os.linu
 }
 
 test "keychain token storage keeps a large record in the keychain of this host" {
+    // Local package policy: host credentials are never accessed by tests.
+    if (!@import("../../../test_policy.zig").host_integrations) return error.SkipZigTest;
     const io = std.testing.io;
     var env = try std.testing.environ.createMap(gpa);
     defer env.deinit();

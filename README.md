@@ -1,98 +1,53 @@
-# zig-sdk
+# mcp.zig
 
-The unofficial Zig SDK for the Model Context Protocol (MCP).
+mcp.zig is a Zig 0.17.0 fork of [ChristianPresley/zig-sdk](https://github.com/ChristianPresley/zig-sdk) v0.5.1. It contains the port first tested in Newt. See `NOTICE` for the origin and changes.
 
-This library gives you an MCP server and an MCP client in Zig 0.16.0. It has no dependency other than the Zig toolchain. It obeys MCP specification revision 2026-07-28 only.[^mcp-spec]
+Use it to build MCP clients and servers over stdio or HTTP with SSE. The native HTTP and TLS implementations are retained. The only supported MCP protocol revision is `2026-07-28`. This fork does not support older protocol revisions or gRPC.
 
-## Consume the SDK
+## Build and test
 
-`examples/consumer/` is a project that depends on the SDK with `b.dependency("mcp", ...)`. A released consumer fetches a tag:
+Use Zig 0.17.0.
 
-```bash
-zig fetch --save-exact git+https://github.com/ChristianPresley/zig-sdk#v0.5.1
+```sh
+zig build check -j2
+zig build test -j2 --summary all
+zig build test -Doptimize=ReleaseSafe -j2 --summary all
+zig build fmt
 ```
 
-## Status
+`test` runs the SDK suite and a stdio client test for concurrent calls and result ownership. `test-sdk` and `test-client` run those suites separately. Tests use local fixtures and loopback connections. Test counts are not a claim of full protocol conformance.
 
-The project is in development. The [Roadmap](https://github.com/ChristianPresley/zig-sdk/wiki/Roadmap) on the wiki shows the milestones, the state of each part and the planned work. The [Release Notes](https://github.com/ChristianPresley/zig-sdk/wiki/Release-Notes) and `CHANGELOG.md` list the changes of each release.
+The stdio example is built at `zig-out/bin/stdio_server` during `test-sdk` or `test`.
 
-## Requirements
+## Use as a dependency
 
-- Zig 0.16.0. The package sets `minimum_zig_version` to this version.
-- No other dependency.
-
-## Add the package to your project
-
-1. Fetch the package with the exact tag:
-
-```bash
-zig fetch --save-exact git+https://github.com/ChristianPresley/zig-sdk#v0.5.1
-```
-
-2. Import the `mcp` module in your `build.zig`:
+Add the repository at your chosen revision with `zig fetch --save=mcp <package-url>`. Keep the dependency revision and hash in `build.zig.zon`, not application source. Import the module in your build:
 
 ```zig
-const mcp = b.dependency("mcp", .{ .target = target, .optimize = optimize }).module("mcp");
+const mcp = b.dependency("mcp", .{
+    .target = target,
+    .optimize = optimize,
+}).module("mcp");
 exe.root_module.addImport("mcp", mcp);
 ```
 
-## Write a server
-
-The example below adds one tool and serves it over stdio.
+A minimal stdio server uses the public API:
 
 ```zig
 const std = @import("std");
 const mcp = @import("mcp");
 
-const AddArgs = struct {
-    a: i64,
-    b: i64,
-    pub const json_schema = .{ .description = "Add two integers." };
-};
-
-fn add(ctx: *mcp.RequestContext, args: AddArgs) anyerror!mcp.Outcome(mcp.CallToolResult) {
-    return .{ .complete = try mcp.CallToolResult.text(ctx.arena, "{d}", .{args.a + args.b}) };
-}
-
 pub fn main(init: std.process.Init) !void {
     var server = try mcp.Server.init(init.gpa, init.io, .{
-        .info = .{ .name = "calc", .version = "0.1.0" },
+        .info = .{ .name = "example", .version = "1" },
     });
     defer server.deinit();
-    try server.addTool(.{ .name = "add", .description = "Add two integers" }, add);
     try mcp.transport.stdio.serve(init.io, init.gpa, &server);
 }
 ```
 
-The SDK derives the JSON Schema of the tool input from the `AddArgs` struct at compile time.
-
-## Build and test
-
-```bash
-zig build test
-```
-
-```bash
-zig build examples
-```
-
-Other build steps: `fmt`, `docs`, `site`, `lint-docs`, `census`, `extract-requirements`, `spec-matrix`, `gen-bibliography`, `gen-dictionary`, `commit-policy`, `bench` (`-- --smoke` for a quick run), and `test -Dfuzz --fuzz` for the fuzz targets (not on Windows).
-
-## Documentation
-
-The wiki holds the guides, the style guide and the bibliography.[^wiki] The [API reference](https://christianpresley.github.io/zig-sdk/) comes from `zig build site`. The [conformance matrix](docs/generated/conformance-matrix.md) maps each requirement of the specification to its tests. Start with these pages:
-
-- [Getting Started](https://github.com/ChristianPresley/zig-sdk/wiki/Getting-Started)
-- [Server Guide](https://github.com/ChristianPresley/zig-sdk/wiki/Server-Guide) and [Client Guide](https://github.com/ChristianPresley/zig-sdk/wiki/Client-Guide)
-- [Transports](https://github.com/ChristianPresley/zig-sdk/wiki/Transports)
-- [Release Notes](https://github.com/ChristianPresley/zig-sdk/wiki/Release-Notes)
-
-All prose in this repository uses ASD-STE100 Simplified Technical English, customized for this project.[^ste] The profile is in `docs/style/ste-profile.md`. `zig build lint-docs` checks the prose.
+See `examples/stdio_server.zig` for tool, resource and prompt registration. To check package imports from a separate build, run `zig build test -j2` in `tests/consumer`.
 
 ## License
 
-Apache License 2.0. See `LICENSE`. The file `THIRD_PARTY_LICENSES.md` lists the third-party material.
-
-[^mcp-spec]: Model Context Protocol Specification 2026-07-28. https://modelcontextprotocol.io/specification/2026-07-28
-[^wiki]: zig-sdk wiki. https://github.com/ChristianPresley/zig-sdk/wiki
-[^ste]: ASD-STE100 Simplified Technical English, Issue 9. https://www.asd-ste100.org/
+The SDK remains under Apache License 2.0. `LICENSE`, `NOTICE` and `THIRD_PARTY_LICENSES.md` retain the upstream notices. Test fixtures include their own licenses and source records.

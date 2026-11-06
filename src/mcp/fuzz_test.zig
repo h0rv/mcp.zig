@@ -1,6 +1,7 @@
 //! Fuzz targets for the parsers of the core module. Each target must never crash. Errors
 //! are the expected outcome for bad input. `zig build test -Dfuzz --fuzz` explores them, and the
 //! plain test run executes each once.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Smith = std.testing.Smith;
 const mcp = @import("../mcp.zig");
@@ -264,13 +265,13 @@ fn tlsParsers(_: void, smith: *Smith) anyerror!void {
 }
 
 test "fuzz: TLS message, DER, PEM and key parsers" {
-    try std.testing.fuzz({}, tlsParsers, .{ .corpus = &.{ "\x03\x03" ++ "\x00" ** 32 ++ "\x00\x00\x02\x13\x01\x01\x00\x00\x00", "0\x82\x01\x00", "0\x82\x04\xa4\x02\x01\x00\x02\x82\x01\x01\x00", "-----BEGIN CERTIFICATE-----\nAAAA\n-----END CERTIFICATE-----\n" } });
+    try std.testing.fuzz({}, tlsParsers, .{ .corpus = &.{ "\x03\x03" ++ @as([32]u8, @splat(0)) ++ "\x00\x00\x02\x13\x01\x01\x00\x00\x00", "0\x82\x01\x00", "0\x82\x04\xa4\x02\x01\x00\x02\x82\x01\x01\x00", "-----BEGIN CERTIFICATE-----\nAAAA\n-----END CERTIFICATE-----\n" } });
 }
 
 fn recordLayer(_: void, smith: *Smith) anyerror!void {
     const gpa = std.testing.allocator;
     const Connection = tls.Connection;
-    const secret = [_]u8{7} ** 32;
+    const secret = @as([32]u8, @splat(7));
 
     // The sender: messages from the input, with flushes and a padding policy from the input.
     var unused_in: std.Io.Reader = .fixed("");
@@ -366,5 +367,5 @@ fn recordLayer(_: void, smith: *Smith) anyerror!void {
 }
 
 test "fuzz: TLS record layer with padding, partial input and one changed byte" {
-    try std.testing.fuzz({}, recordLayer, .{ .corpus = &.{ "", "hello\nover tls\n", "\x01\x00\x10" ++ "a" ** 64 ++ "\n" } });
+    try std.testing.fuzz({}, recordLayer, .{ .corpus = &.{ "", "hello\nover tls\n", "\x01\x00\x10" ++ @as([64]u8, @splat('a')) ++ "\n" } });
 }

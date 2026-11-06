@@ -1,4 +1,5 @@
 //! Server-sent events: an incremental parser per the WHATWG HTML standard and an event writer.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -304,7 +305,7 @@ test "parser ignores a long event ID, thus many small events after it use little
     try p.feed(id_line);
     try p.feed("\n");
     // 1024 small events in one feed, as one read of a response body gives them.
-    try p.feed("data:x\n\n" ** 1024);
+    try p.feed(&comptime @import("../../repeat.zig").bytes("data:x\n\n", 1024));
     // Before, each event got a copy of the ID: 1024 copies of 64 KiB.
     try std.testing.expect(peak.peak < 4 * max_event_bytes);
     var count: usize = 0;

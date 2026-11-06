@@ -12,6 +12,7 @@
 //! - PNG and JPEG are always available. GIF, WebP and SVG are off by default. They pass only
 //!   when the policy turns them on and the application gives a decoder. SVG can contain script.
 //! - The size, the dimensions and the time of a fetch have limits (`Limits.Icon`).
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -608,7 +609,7 @@ const Download = struct {
             defer conn.close();
             conn.send("GET", target.path, target.host_header, &headers, "") catch return error.TransportFailed;
             const response = conn.receiveHead() catch return error.TransportFailed;
-            switch (@intFromEnum(response.head.status)) {
+            switch (@backingInt(response.head.status)) {
                 200 => {},
                 301, 302, 303, 307, 308 => {
                     const location = response.head.location orelse return error.RedirectRefused;
@@ -652,8 +653,8 @@ fn resolveRedirect(arena: Allocator, base_url: []const u8, location: []const u8)
 
 fn download(io: Io, gpa: Allocator, arena: Allocator, url: []const u8, policy: Policy, options: FetchOptions) Error!Body {
     var accept: std.ArrayList(u8) = .empty;
-    inline for (@typeInfo(Format).@"enum".fields) |field| {
-        const f: Format = @enumFromInt(field.value);
+    inline for (@typeInfo(Format).@"enum".field_values) |value| {
+        const f: Format = @fromBackingInt(@intCast(value));
         if (policy.formats.allows(f)) {
             if (accept.items.len > 0) try accept.appendSlice(arena, ", ");
             try accept.appendSlice(arena, f.mimeType());
@@ -750,7 +751,7 @@ test "data uris" {
     try testing.expectError(error.TooLarge, decodeData(arena, "data:;base64,aGVsbG8=", 4));
     try testing.expectError(error.TooLarge, decodeData(arena, "data:,hello", 4));
     // The size check comes before any allocation.
-    const huge = "data:;base64," ++ "A" ** 64;
+    const huge = "data:;base64," ++ @as([64]u8, @splat('A'));
     try testing.expectError(error.TooLarge, decodeData(testing.failing_allocator, huge, 8));
 }
 

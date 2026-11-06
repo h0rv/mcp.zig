@@ -1,5 +1,6 @@
 //! The Streamable HTTP transport (server side): one `POST` endpoint, JSON or SSE responses,
 //! long-lived listen streams, header mirroring, `Origin` and `Host` validation.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -513,7 +514,7 @@ fn statusForCode(code: i64) http.Status {
     return switch (code) {
         -32700, -32600, -32602, -32020, -32021, -32022 => .bad_request,
         -32601 => .not_found,
-        @intFromEnum(errors.Code.rate_limited) => .too_many_requests,
+        @backingInt(errors.Code.rate_limited) => .too_many_requests,
         else => .ok,
     };
 }
@@ -587,7 +588,7 @@ fn handleRequest(conn: *Connection, request: *http.Server.Request, socket: *Io.n
                 try headers.appendSlice(arena, c.headers(&buf));
                 try headers.append(arena, .{ .name = "content-type", .value = "application/json" });
                 try request.respond(c.body, .{
-                    .status = @enumFromInt(c.status),
+                    .status = @fromBackingInt(@intCast(c.status)),
                     .keep_alive = request.head.keep_alive,
                     .extra_headers = headers.items,
                 });

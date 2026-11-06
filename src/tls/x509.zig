@@ -1,6 +1,7 @@
 //! The X.509 extensions that chain validation needs and `std.crypto.Certificate` does not
 //! expose: basic constraints, key usage and the subject alternative name (RFC 5280
 //! section 4.2.1).
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Certificate = std.crypto.Certificate;
 const der = @import("der.zig");
@@ -298,7 +299,7 @@ fn verifyRsaPkcs1(comptime Hash: type, message: []const u8, signature: []const u
         inline 256, 384, 512 => |modulus_len| {
             if (signature.len != modulus_len) return error.BadSignature;
             const public = rsa.PublicKey.fromBytes(components.exponent, components.modulus) catch return error.BadSignature;
-            rsa.PKCS1v1_5Signature.verify(modulus_len, signature[0..modulus_len].*, message, public, Hash) catch return error.BadSignature;
+            rsa.PKCS1v1_5Signature.verify(modulus_len, signature[0..modulus_len], message, public, Hash) catch return error.BadSignature;
         },
         else => return error.UnsupportedAlgorithm,
     }

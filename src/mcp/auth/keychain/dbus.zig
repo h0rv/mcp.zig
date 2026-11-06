@@ -8,6 +8,7 @@
 //! types that the Secret Service API needs: `y`, `b`, `u`, `s`, `o`, `g`, `v`, arrays, structs
 //! and dictionary entries. It skips values of the other basic types. It does not pass file
 //! descriptors.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const builtin = @import("builtin");
 const Io = std.Io;
@@ -413,7 +414,7 @@ pub fn writeMessage(gpa: Allocator, w: *Io.Writer, serial: u32, message: Outgoin
     var h: Encoder = .{ .gpa = gpa };
     defer h.deinit();
     try h.byte('l');
-    try h.byte(@intFromEnum(message.kind));
+    try h.byte(@backingInt(message.kind));
     try h.byte(message.flags);
     try h.byte(1);
     try h.uint32(@intCast(message.body.len));
@@ -466,7 +467,7 @@ pub fn readMessage(arena: Allocator, r: *Io.Reader) ReadError!Message {
     const raw = try arena.alloc(u8, header_end + body_len);
     @memcpy(raw[0..16], &fixed);
     try r.readSliceAll(raw[16..]);
-    var m: Message = .{ .kind = @enumFromInt(fixed[1]), .flags = fixed[2], .serial = serial, .big = big, .raw = raw, .body = raw[header_end..] };
+    var m: Message = .{ .kind = @fromBackingInt(@intCast(fixed[1])), .flags = fixed[2], .serial = serial, .big = big, .raw = raw, .body = raw[header_end..] };
     if (serial == 0) return error.ProtocolError;
     var d: Decoder = .{ .data = raw[0..header_end], .pos = 12, .big = big };
     const end = try d.beginArray(8);
@@ -828,7 +829,7 @@ fn connectAbstract(io: Io, name: []const u8, end: ?Io.Clock.Timestamp) Error!Io.
             pause = .fromNanoseconds(@min(2 * pause.nanoseconds, max_connect_pause.nanoseconds));
         },
         else => |e| {
-            log.debug("could not connect to the bus at the abstract name {s}: errno {d}", .{ name, @intFromEnum(e) });
+            log.debug("could not connect to the bus at the abstract name {s}: errno {d}", .{ name, @backingInt(e) });
             return error.ConnectFailed;
         },
     };

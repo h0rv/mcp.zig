@@ -5,6 +5,7 @@
 //! The SDK uses complete CRLs that the CA of the certificate signs. At load time it
 //! refuses a delta CRL and an indirect CRL. It also refuses a CRL with the extension
 //! `issuingDistributionPoint`, and a CRL with a critical extension that it does not know.
+// Modified by h0rv for Zig 0.17.0 formatting.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Certificate = std.crypto.Certificate;
@@ -208,7 +209,7 @@ fn parseEntry(element: der.Element) InnerError!ParsedEntry {
             if (parsed.oid.isOid(oid_reason_code)) {
                 const value = try (try der.parseExact(parsed.extension.value)).expect(der.tag_enumerated);
                 if (value.content.len != 1) return error.InvalidLength;
-                result.entry.reason = @enumFromInt(value.content[0]);
+                result.entry.reason = @fromBackingInt(@intCast(value.content[0]));
             } else if (parsed.oid.isOid(oid_certificate_issuer)) {
                 // The entry belongs to another issuer: an indirect CRL.
                 return error.UnsupportedCrl;

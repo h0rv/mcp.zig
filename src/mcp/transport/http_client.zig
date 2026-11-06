@@ -3,6 +3,7 @@
 //! mirrors the request into the `Mcp-*` headers, learns `x-mcp-header` annotations from
 //! `tools/list` results, and drops tools whose annotations are invalid. HTTPS uses the
 //! SDK TLS client.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Allocator = std.mem.Allocator;
@@ -298,7 +299,7 @@ pub const Client = struct {
         defer conn.close();
         conn.send("POST", self.target.path, self.target.host_header, headers.items, ex.frame) catch return error.WriteFailed;
         const response = conn.receiveHead() catch return error.ReadFailed;
-        ex.http_status = @intFromEnum(response.head.status);
+        ex.http_status = @backingInt(response.head.status);
         var nonce: ?[]const u8 = null;
         var www: ?[]const u8 = null;
         var it = response.head.iterateHeaders();
@@ -428,6 +429,6 @@ test "the log text of a header value of the server has no control characters" {
     try w.print("{f}", .{HeaderText{ .value = "" }});
     try std.testing.expectEqualStrings("none", w.buffered());
     w = .fixed(&buf);
-    try w.print("{f}", .{HeaderText{ .value = "a" ** 120 }});
-    try std.testing.expectEqualStrings("a" ** 100 ++ "...", w.buffered());
+    try w.print("{f}", .{HeaderText{ .value = &@as([120]u8, @splat('a')) }});
+    try std.testing.expectEqualStrings(@as([100]u8, @splat('a')) ++ "...", w.buffered());
 }

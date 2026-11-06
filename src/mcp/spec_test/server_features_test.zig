@@ -1,5 +1,6 @@
 //! Tests for the tools, prompts and resources pages of the MCP specification.
 //! Each test checks one group of server or client obligations through the public API.
+// Modified by h0rv for Zig 0.17.0 compatibility.
 const std = @import("std");
 const Io = std.Io;
 const Value = std.json.Value;
@@ -314,8 +315,8 @@ test "tool names follow the length, character, case and uniqueness rules" {
 
     // Length from 1 to 128 characters.
     try std.testing.expectError(error.InvalidToolName, server.addToolJson(.{ .name = "" }, okTool));
-    try std.testing.expectError(error.InvalidToolName, server.addToolJson(.{ .name = "a" ** 129 }, okTool));
-    try server.addToolJson(.{ .name = "a" ** 128 }, okTool);
+    try std.testing.expectError(error.InvalidToolName, server.addToolJson(.{ .name = &@as([129]u8, @splat('a')) }, okTool));
+    try server.addToolJson(.{ .name = &@as([128]u8, @splat('a')) }, okTool);
     try server.addToolJson(.{ .name = "x" }, okTool);
     // Only ASCII letters, digits, underscore, hyphen and dot.
     for ([_][]const u8{ "get user", "get,user", "get/user", "get:user", "get@user", "caf\xc3\xa9", "tab\tname" }) |bad| {
