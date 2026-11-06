@@ -1,8 +1,8 @@
 # mcp.zig
 
-mcp.zig is a Zig 0.17.0 fork of [ChristianPresley/zig-sdk](https://github.com/ChristianPresley/zig-sdk) v0.5.1. It contains the port first tested in Newt. See `NOTICE` for the origin and changes.
+An MCP client and server library for Zig. It supports stdio and HTTP with SSE. No external HTTP or TLS library is required.
 
-Use it to build MCP clients and servers over stdio or HTTP with SSE. The native HTTP and TLS implementations are retained. The only supported MCP protocol revision is `2026-07-28`. This fork does not support older protocol revisions or gRPC.
+The supported MCP protocol revision is `2026-07-28`. Older revisions and gRPC are not supported.
 
 ## Build and test
 
@@ -15,13 +15,13 @@ zig build test -Doptimize=ReleaseSafe -j2 --summary all
 zig build fmt
 ```
 
-`test` runs the SDK suite and a stdio client test for concurrent calls and result ownership. `test-sdk` and `test-client` run those suites separately. Tests use local fixtures and loopback connections. Test counts are not a claim of full protocol conformance.
+`test` runs the SDK and client suites with local fixtures. Use `test-sdk` or `test-client` to run one suite.
 
 The stdio example is built at `zig-out/bin/stdio_server` during `test-sdk` or `test`.
 
 ## Use as a dependency
 
-Add the repository at your chosen revision with `zig fetch --save=mcp <package-url>`. Keep the dependency revision and hash in `build.zig.zon`, not application source. Import the module in your build:
+Add the repository at your chosen revision with `zig fetch --save=mcp <package-url>`. Import the module in your build:
 
 ```zig
 const mcp = b.dependency("mcp", .{
